@@ -80,6 +80,20 @@ cargo tauri build
 
 ไฟล์ติดตั้งจะอยู่ใต้ `target/release/bundle`
 
+## Windows release
+
+มี GitHub Actions สำหรับสร้างชุดติดตั้ง Windows แล้ว:
+
+- **ทดสอบสร้าง Windows installer แบบ manual**: ไปที่ `Actions` → `Test Build` → `Run workflow` แล้วดาวน์โหลด artifact ชื่อ `snapherb-windows-installers` (มีทั้ง `.msi` และ `.exe` จาก NSIS)
+- **ออก release เต็มรูปแบบ**: สร้าง tag ให้ตรงกับเวอร์ชันใน `tauri.conf.json` แล้ว push
+  ```bash
+  git tag v1.26.24
+  git push origin v1.26.24
+  ```
+  workflow `Publish Release` จะสร้าง GitHub Release พร้อมไฟล์ติดตั้ง Windows, Linux และ macOS
+
+หมายเหตุ: Windows ต้องมี WebView2 Runtime (มีมากับ Windows 10/11 รุ่นที่อัปเดตแล้ว) และไฟล์ติดตั้งยังไม่ได้ลงลายเซ็น อาจพบหน้า SmartScreen
+
 ## การตรวจสอบ
 
 ```bash
