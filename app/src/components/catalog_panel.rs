@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use leptos::prelude::*;
 use snap_herb_core::CatalogOpsError;
 use snap_herb_models::DrugItem;
@@ -8,6 +10,9 @@ use crate::components::icons::{
 };
 use crate::components::settings_modal::{StatusLine, StatusMessage};
 use crate::state::AppState;
+
+const SEARCH_DEBOUNCE: Duration = Duration::from_millis(250);
+const MIN_SEARCH_CHARS: usize = 3;
 
 fn catalog_error_th(err: &CatalogOpsError) -> String {
     match err {
@@ -35,31 +40,54 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
     let term = RwSignal::new(String::new());
     let results = RwSignal::new(Vec::<DrugItem>::new());
     let searching = RwSignal::new(false);
+    let search_seq = RwSignal::new(0_u64);
+    let expanded = RwSignal::new(None::<String>);
+    let manual_open = RwSignal::new(false);
+    let manual_name = RwSignal::new(String::new());
+    let manual_strength = RwSignal::new(String::new());
+    let manual_usage_unit = RwSignal::new("หน่วย".to_string());
+    let manual_pack_unit = RwSignal::new("กล่อง".to_string());
+    let manual_units = RwSignal::new("1".to_string());
+    let manual_max = RwSignal::new("1".to_string());
     let status = RwSignal::new(None::<StatusMessage>);
     let busy = RwSignal::new(false);
     let dirty = RwSignal::new(false);
 
-    let on_search = move |ev: web_sys::SubmitEvent| {
-        ev.prevent_default();
-        let value = term.get();
-        if value.trim().chars().count() < 2 {
-            status.set(Some(StatusMessage::error(
-                "พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหายา".to_string(),
-            )));
+    let on_term_input = move |ev| {
+        let raw = event_target_value(&ev);
+        term.set(raw.clone());
+        let seq = search_seq.get_untracked().wrapping_add(1);
+        search_seq.set(seq);
+        results.set(Vec::new());
+        status.set(None);
+        let needle = raw.trim().to_string();
+        if needle.chars().count() < MIN_SEARCH_CHARS {
+            searching.set(false);
             return;
         }
         searching.set(true);
-        status.set(None);
-        leptos::task::spawn_local(async move {
-            match api::search_drugs(&value).await {
-                Ok(hits) => results.set(hits),
-                Err(err) => {
-                    results.set(Vec::new());
-                    status.set(Some(StatusMessage::error(err.message)));
+        let _ = set_timeout_with_handle(
+            move || {
+                if search_seq.get_untracked() != seq {
+                    return;
                 }
-            }
-            searching.set(false);
-        });
+                leptos::task::spawn_local(async move {
+                    let outcome = api::search_drugs(&needle).await;
+                    if search_seq.get_untracked() != seq {
+                        return;
+                    }
+                    searching.set(false);
+                    match outcome {
+                        Ok(hits) => results.set(hits),
+                        Err(err) => {
+                            results.set(Vec::new());
+                            status.set(Some(StatusMessage::error(err.message)));
+                        }
+                    }
+                });
+            },
+            SEARCH_DEBOUNCE,
+        );
     };
 
     let on_add_drug = move |item: DrugItem| {
@@ -80,8 +108,94 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
             Some(message) => status.set(Some(StatusMessage::error(message))),
             None => {
                 dirty.set(true);
+                expanded.set(Some(item.icode.clone()));
                 status.set(Some(StatusMessage::ok(format!(
                     "เพิ่ม {} แล้ว กรุณากำหนดหน่วยเบิกและจำนวนสูงสุดก่อนบันทึก",
+                    item.name
+                ))));
+            }
+        }
+    };
+
+    let on_manual_add = move |ev: web_sys::SubmitEvent| {
+        ev.prevent_default();
+        let name = manual_name.get_untracked().trim().to_string();
+        if name.is_empty() {
+            status.set(Some(StatusMessage::error("กรุณากรอกชื่อยา".to_string())));
+            return;
+        }
+        let units_per_pack = match manual_units.get_untracked().trim().parse::<f64>() {
+            Ok(value) => value,
+            Err(_) => {
+                status.set(Some(StatusMessage::error(
+                    "จำนวนหน่วยนับใน 1 หน่วยเบิกต้องเป็นตัวเลข".to_string(),
+                )));
+                return;
+            }
+        };
+        let max_packs = match manual_max.get_untracked().trim().parse::<f64>() {
+            Ok(value) => value,
+            Err(_) => {
+                status.set(Some(StatusMessage::error(
+                    "จำนวนสูงสุดที่เบิกได้ต้องเป็นตัวเลข".to_string(),
+                )));
+                return;
+            }
+        };
+        let usage_unit = manual_usage_unit.get_untracked().trim().to_string();
+        let pack_unit = manual_pack_unit.get_untracked().trim().to_string();
+        let strength = manual_strength.get_untracked().trim().to_string();
+        let existing = draft.get_untracked();
+        let mut next = existing
+            .drugs
+            .iter()
+            .filter_map(|drug| {
+                drug.icode
+                    .strip_prefix("MANUAL-")
+                    .and_then(|suffix| suffix.parse::<u32>().ok())
+            })
+            .max()
+            .unwrap_or(0)
+            + 1;
+        let icode = loop {
+            let candidate = format!("MANUAL-{next:03}");
+            if !existing.drugs.iter().any(|drug| drug.icode == candidate) {
+                break candidate;
+            }
+            next += 1;
+        };
+        let item = DrugItem {
+            icode,
+            name: name.clone(),
+            strength,
+            units: String::new(),
+        };
+        let mut error = None;
+        draft.update(|catalog| {
+            if let Err(err) = snap_herb_core::add_herb(
+                catalog,
+                &item,
+                &usage_unit,
+                &pack_unit,
+                units_per_pack,
+                max_packs,
+            ) {
+                error = Some(catalog_error_th(&err));
+            }
+        });
+        match error {
+            Some(message) => status.set(Some(StatusMessage::error(message))),
+            None => {
+                dirty.set(true);
+                expanded.set(Some(item.icode.clone()));
+                manual_name.set(String::new());
+                manual_strength.set(String::new());
+                manual_usage_unit.set("หน่วย".to_string());
+                manual_pack_unit.set("กล่อง".to_string());
+                manual_units.set("1".to_string());
+                manual_max.set("1".to_string());
+                status.set(Some(StatusMessage::ok(format!(
+                    "เพิ่ม {} แล้ว อย่าลืมกดบันทึกรายการยา",
                     item.name
                 ))));
             }
@@ -162,6 +276,9 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
         if let Some(message) = error {
             status.set(Some(StatusMessage::error(message)));
         } else {
+            if expanded.get_untracked().as_deref() == Some(icode.as_str()) {
+                expanded.set(None);
+            }
             dirty.set(true);
             status.set(None);
         }
@@ -204,6 +321,10 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                     .unwrap_or_default(),
             );
             results.set(Vec::new());
+            term.set(String::new());
+            searching.set(false);
+            search_seq.update(|seq| *seq = seq.wrapping_add(1));
+            expanded.set(None);
             dirty.set(false);
             status.set(None);
         }
@@ -223,7 +344,7 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                 </div>
             </div>
 
-            <form class="picker" on:submit=on_search>
+            <div class="picker">
                 <span class="panel__label">"ค้นหายาสมุนไพรจาก HOSxP"</span>
                 <div class="picker__search">
                     <span class="picker__icon">
@@ -232,14 +353,27 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                     <input
                         class="text-input"
                         type="search"
-                        placeholder="พิมพ์ชื่อหรือรหัสยา (อย่างน้อย 2 ตัวอักษร)"
+                        placeholder="พิมพ์ชื่อหรือรหัสยา อย่างน้อย 3 ตัวอักษร"
                         prop:value=move || term.get()
-                        on:input=move |ev| term.set(event_target_value(&ev))
+                        on:input=on_term_input
                     />
-                    <button class="button-secondary" type="submit" disabled=move || searching.get()>
-                        {move || if searching.get() { "กำลังค้นหา..." } else { "ค้นหา" }}
-                    </button>
                 </div>
+                <p class="panel__note">
+                    {move || {
+                        let count = term.get().trim().chars().count();
+                        if searching.get() {
+                            "กำลังค้นหายา...".to_string()
+                        } else if count == 0 {
+                            String::new()
+                        } else if count < MIN_SEARCH_CHARS {
+                            format!("พิมพ์อีก {} ตัวอักษร", MIN_SEARCH_CHARS - count)
+                        } else if results.get().is_empty() {
+                            "ไม่พบยาที่ตรงกับคำค้น".to_string()
+                        } else {
+                            format!("พบยา {} รายการ", results.get().len())
+                        }
+                    }}
+                </p>
                 <ul class="picker__results">
                     {move || {
                         results
@@ -296,7 +430,110 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                             .collect_view()
                     }}
                 </ul>
-            </form>
+            </div>
+
+            <div class="manual-herb">
+                <button
+                    class="button-secondary manual-herb__toggle"
+                    type="button"
+                    on:click=move |_| manual_open.update(|open| *open = !*open)
+                >
+                    <IconPlus class="icon" />
+                    {move || {
+                        if manual_open.get() {
+                            "ซ่อนการเพิ่มรายการเอง"
+                        } else {
+                            "เพิ่มรายการที่ต้องการเบิกด้วยตนเอง"
+                        }
+                    }}
+                </button>
+                {move || {
+                    manual_open
+                        .get()
+                        .then(|| {
+                            view! {
+                                <form class="form-card manual-herb__form" on:submit=on_manual_add>
+                <div>
+                    <h3 class="panel__subtitle">"เพิ่มรายการที่ต้องการเบิกด้วยตนเอง"</h3>
+                    <p class="panel__note">
+                        "สำหรับรายการที่ไม่มีใน HOSxP และจะไม่ถูกดึงยอดใช้จาก HOSxP"
+                    </p>
+                </div>
+                <div class="manual-herb__grid">
+                    <label class="field">
+                        <span class="field__label">"ชื่อยา"</span>
+                        <input
+                            class="text-input"
+                            type="text"
+                            placeholder="เช่น ยาแก้ลมแก้เส้น"
+                            prop:value=move || manual_name.get()
+                            on:input=move |ev| manual_name.set(event_target_value(&ev))
+                        />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">"ความแรง"</span>
+                        <input
+                            class="text-input"
+                            type="text"
+                            placeholder="เช่น 500 mg"
+                            prop:value=move || manual_strength.get()
+                            on:input=move |ev| manual_strength.set(event_target_value(&ev))
+                        />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">"หน่วยนับการใช้"</span>
+                        <input
+                            class="text-input"
+                            type="text"
+                            placeholder="เช่น แคปซูล"
+                            prop:value=move || manual_usage_unit.get()
+                            on:input=move |ev| manual_usage_unit.set(event_target_value(&ev))
+                        />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">"หน่วยเบิก"</span>
+                        <input
+                            class="text-input"
+                            type="text"
+                            placeholder="เช่น กล่อง"
+                            prop:value=move || manual_pack_unit.get()
+                            on:input=move |ev| manual_pack_unit.set(event_target_value(&ev))
+                        />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">"จำนวนหน่วยนับใน 1 หน่วยเบิก"</span>
+                        <input
+                            class="text-input"
+                            type="number"
+                            min="0.0001"
+                            step="any"
+                            prop:value=move || manual_units.get()
+                            on:input=move |ev| manual_units.set(event_target_value(&ev))
+                        />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">"จำนวนสูงสุด/รอบ"</span>
+                        <input
+                            class="text-input"
+                            type="number"
+                            min="0"
+                            step="1"
+                            prop:value=move || manual_max.get()
+                            on:input=move |ev| manual_max.set(event_target_value(&ev))
+                        />
+                    </label>
+                </div>
+                <div class="panel__actions">
+                    <button class="button-secondary" type="submit">
+                        <IconPlus class="icon" />
+                        "เพิ่มรายการ"
+                    </button>
+                </div>
+                                </form>
+                            }
+                        })
+                }}
+            </div>
 
             {move || {
                 let catalog = draft.get();
@@ -361,9 +598,37 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                         let usage_for_max = drug.usage_unit.clone();
                         let pack_for_max = drug.pack_unit.clone();
                         let units_for_max = drug.units_per_pack.to_string();
+                        let is_expanded =
+                            expanded.get().as_deref() == Some(drug.icode.as_str());
+                        let toggle_icode = drug.icode.clone();
 
                         view! {
                             <div class="herb-row">
+                                <button
+                                    class="herb-row__toggle"
+                                    type="button"
+                                    aria-expanded=is_expanded.to_string()
+                                    on:click=move |_| {
+                                        if expanded.get_untracked().as_deref()
+                                            == Some(toggle_icode.as_str())
+                                        {
+                                            expanded.set(None);
+                                        } else {
+                                            expanded.set(Some(toggle_icode.clone()));
+                                        }
+                                    }
+                                >
+                                    <span class="herb-row__title">{drug.name.clone()}</span>
+                                    {if is_expanded {
+                                        view! { <IconChevronUp class="icon" /> }.into_any()
+                                    } else {
+                                        view! { <IconChevronDown class="icon" /> }.into_any()
+                                    }}
+                                </button>
+                                {is_expanded
+                                    .then(|| {
+                                        view! {
+                                            <div class="herb-row__details">
                                 <div class="herb-row__line">
                                     <input
                                         class="text-input herb-row__name"
@@ -382,7 +647,19 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                                             )
                                         }
                                     />
-                                    <span class="badge-icode">{drug.icode.clone()}</span>
+                                    {if drug.icode.starts_with("MANUAL-") {
+                                        view! {
+                                            <span class="badge-icode badge-icode--manual">
+                                                "เพิ่มเอง"
+                                            </span>
+                                        }
+                                            .into_any()
+                                    } else {
+                                        view! {
+                                            <span class="badge-icode">{drug.icode.clone()}</span>
+                                        }
+                                            .into_any()
+                                    }}
                                     <div class="herb-row__actions">
                                         <button
                                             class="button-icon-circular button-icon-circular--small"
@@ -478,7 +755,7 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                                             class="text-input"
                                             type="number"
                                             min="0.0001"
-                                            step="1"
+                                            step="any"
                                             value=drug.units_per_pack.to_string()
                                             on:change=move |ev| {
                                                 on_update(
@@ -525,6 +802,9 @@ pub fn CatalogPanel(state: AppState) -> impl IntoView {
                                         </span>
                                     </div>
                                 </div>
+                                            </div>
+                                        }
+                                    })}
                             </div>
                         }
                     })

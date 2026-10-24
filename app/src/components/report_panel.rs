@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use snap_herb_models::ReportMeta;
 
 use crate::api;
+use crate::components::icons::IconFileText;
 use crate::components::settings_modal::{StatusLine, StatusMessage};
 use crate::state::AppState;
 
@@ -49,7 +50,14 @@ pub fn ReportPanel(state: AppState) -> impl IntoView {
 
     view! {
         <div class="panel">
-            <h3 class="panel__subtitle">"ข้อความบนหัวใบเบิก"</h3>
+            <div class="panel-head">
+                <span class="panel-head__icon">
+                    <IconFileText class="icon" />
+                </span>
+                <div>
+                    <h3 class="panel__subtitle">"ข้อความบนหัวใบเบิก"</h3>
+                </div>
+            </div>
             <label class="field">
                 <span class="field__label">"ชื่อโรงพยาบาล"</span>
                 <input

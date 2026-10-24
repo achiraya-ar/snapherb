@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use chrono::NaiveDateTime;
+use chrono::{Local, NaiveDateTime};
 use leptos::prelude::*;
 use snap_herb_core::{ROWS_PER_PAGE, SheetPage, paginate_rows};
 use snap_herb_models::{
@@ -76,6 +76,10 @@ fn SheetPageView(
     let report = data.report.clone();
     let approvals = data.approvals.clone();
     let requested_by = data.requested_by.clone();
+    let signature_date = printed_at
+        .map(|printed_at| printed_at.date())
+        .unwrap_or_else(|| Local::now().date_naive());
+    let signature_date_text = format!("วันที่ {}", format_thai_date(signature_date));
 
     view! {
         <article class="sheet">
@@ -269,7 +273,7 @@ fn SheetPageView(
                                             })}
                                         " )"
                                     </p>
-                                    <p>"วันที่ ......... / ......... / ........."</p>
+                                    <p>{signature_date_text.clone()}</p>
                                 </div>
                             </div>
                             <div class="sheet__signature">
@@ -284,7 +288,7 @@ fn SheetPageView(
                                         }}
                                         " )"
                                     </p>
-                                    <p>"วันที่ ......... / ......... / ........."</p>
+                                    <p>{signature_date_text.clone()}</p>
                                 </div>
                             </div>
                         </div>

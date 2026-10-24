@@ -20,7 +20,7 @@ use crate::settings::{self, AppSettings as Settings};
 use crate::state::{AppState, ConnectionHealth};
 
 const HEALTH_POLL_INTERVAL: Duration = Duration::from_secs(30);
-const SEARCH_TERM_MIN_CHARS: usize = 2;
+const SEARCH_TERM_MIN_CHARS: usize = 3;
 const SEARCH_TERM_MAX_CHARS: usize = 100;
 
 #[derive(Debug, Deserialize)]
@@ -332,7 +332,7 @@ pub async fn search_drugs(
     let term = term.trim();
     let char_count = term.chars().count();
     if char_count < SEARCH_TERM_MIN_CHARS {
-        return Err(CommandError::validation("พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหายา"));
+        return Err(CommandError::validation("พิมพ์อย่างน้อย 3 ตัวอักษรเพื่อค้นหายา"));
     }
     if char_count > SEARCH_TERM_MAX_CHARS {
         return Err(CommandError::validation("คำค้นหายาวเกินไป"));
@@ -357,7 +357,7 @@ pub async fn search_doctors(
     let term = term.trim();
     let char_count = term.chars().count();
     if char_count < SEARCH_TERM_MIN_CHARS {
-        return Err(CommandError::validation("พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาแพทย์"));
+        return Err(CommandError::validation("พิมพ์อย่างน้อย 3 ตัวอักษรเพื่อค้นหาแพทย์"));
     }
     if char_count > SEARCH_TERM_MAX_CHARS {
         return Err(CommandError::validation("คำค้นหายาวเกินไป"));

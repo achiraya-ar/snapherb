@@ -368,9 +368,21 @@ fn AddDrugDialog(state: AppState) -> impl IntoView {
                                                     {candidate.name.clone()}
                                                 </span>
                                                 <span class="picker__result-meta">
-                                                    <span class="badge-icode">
-                                                        {candidate.icode.clone()}
-                                                    </span>
+                                                    {if candidate.icode.starts_with("MANUAL-") {
+                                                        view! {
+                                                            <span class="badge-icode badge-icode--manual">
+                                                                "เพิ่มเอง"
+                                                            </span>
+                                                        }
+                                                            .into_any()
+                                                    } else {
+                                                        view! {
+                                                            <span class="badge-icode">
+                                                                {candidate.icode.clone()}
+                                                            </span>
+                                                        }
+                                                            .into_any()
+                                                    }}
                                                     <span class="picker__result-strength">
                                                         {candidate.pack_label()}
                                                     </span>

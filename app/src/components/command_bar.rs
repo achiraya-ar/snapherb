@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use chrono::{Local, NaiveDate};
 use leptos::prelude::*;
-use snap_herb_models::{ReportRow, format_qty, format_thai_date_abbr};
+use snap_herb_models::ReportRow;
 
 use crate::api::{self, ApiErrorKind};
 use crate::components::icons::{IconCheck, IconPlus, IconPrinter, IconRefresh};
@@ -153,8 +153,6 @@ pub fn CommandBar(state: AppState) -> impl IntoView {
         }
     };
 
-    let stats_state = state.clone();
-
     view! {
         <div class="command-bar">
             <div class="command-bar__main">
@@ -181,71 +179,33 @@ pub fn CommandBar(state: AppState) -> impl IntoView {
                             on:change=on_end_change
                         />
                     </label>
-
-                    <div class="run-window">
-                        <div class="run-window__heading">
-                            <span class="run-window__label">"ช่วงวันที่เบิก"</span>
-                            <span class="run-window__badge run-window__badge--auto">
-                                "เลือกเอง"
-                            </span>
-                        </div>
-                        <div class="run-window__times">
-                            <span class="run-window__time">
-                                {let start_state = state.clone(); move || {
-                                    start_state
-                                        .period()
-                                        .map(|period| format_thai_date_abbr(period.start_date))
-                                        .unwrap_or_else(|| "-".to_string())
-                                }}
-                            </span>
-                            <span class="run-window__arrow">"→"</span>
-                            <span class="run-window__time">
-                                {let end_state = state.clone(); move || {
-                                    end_state
-                                        .period()
-                                        .map(|period| format_thai_date_abbr(period.end_date))
-                                        .unwrap_or_else(|| "-".to_string())
-                                }}
-                            </span>
-                        </div>
-                    </div>
+                    <button
+                        class={let class_state = state.clone(); move || {
+                            if class_state.rows.get().is_none() {
+                                "button-primary"
+                            } else {
+                                "button-secondary"
+                            }
+                        }}
+                        disabled={let fetch_state = state.clone(); move || {
+                            fetch_state.period().is_none() || fetch_state.loading.get()
+                        }}
+                        on:click=on_fetch
+                    >
+                        <IconRefresh class="icon" />
+                        {let label_state = state.clone(); move || {
+                            if label_state.loading.get() {
+                                "กำลังดึงข้อมูล..."
+                            } else if label_state.rows.get().is_some() {
+                                "ดึงใหม่"
+                            } else {
+                                "ดึงข้อมูลการใช้ยา"
+                            }
+                        }}
+                    </button>
                 </div>
 
                 <div class="command-bar__actions">
-                    {move || {
-                        let (rows, used, adjusted, requested) = stats_state
-                            .rows
-                            .get()
-                            .map(|rows| {
-                                let used = rows.iter().filter(|row| row.usage > 0.0).count();
-                                let adjusted =
-                                    rows.iter().filter(|row| row.has_adjustment()).count();
-                                let requested: f64 =
-                                    rows.iter().map(|row| row.requested).sum();
-                                (rows.len(), used, adjusted, requested)
-                            })
-                            .unwrap_or((0, 0, 0, 0.0));
-                        view! {
-                            <div class="stat-strip">
-                                <span class="stat">
-                                    <span class="stat__label">"ในใบเบิก"</span>
-                                    <span class="stat__value">{rows}</span>
-                                </span>
-                                <span class="stat">
-                                    <span class="stat__label">"มีการใช้"</span>
-                                    <span class="stat__value">{used}</span>
-                                </span>
-                                <span class="stat">
-                                    <span class="stat__label">"ขอเพิ่ม/แก้ไข"</span>
-                                    <span class="stat__value">{adjusted}</span>
-                                </span>
-                                <span class="stat">
-                                    <span class="stat__label">"เบิกรวม (หน่วยเบิก)"</span>
-                                    <span class="stat__value">{format_qty(requested)}</span>
-                                </span>
-                            </div>
-                        }
-                    }}
                     <div class="command-bar__buttons">
                         <button
                             class="button-secondary"
@@ -258,30 +218,6 @@ pub fn CommandBar(state: AppState) -> impl IntoView {
                         >
                             <IconPlus class="icon" />
                             "เพิ่มรายการยา"
-                        </button>
-                        <button
-                            class={let class_state = state.clone(); move || {
-                                if class_state.rows.get().is_none() {
-                                    "button-primary"
-                                } else {
-                                    "button-secondary"
-                                }
-                            }}
-                            disabled={let fetch_state = state.clone(); move || {
-                                fetch_state.period().is_none() || fetch_state.loading.get()
-                            }}
-                            on:click=on_fetch
-                        >
-                            <IconRefresh class="icon" />
-                            {let label_state = state.clone(); move || {
-                                if label_state.loading.get() {
-                                    "กำลังดึงข้อมูล..."
-                                } else if label_state.rows.get().is_some() {
-                                    "ดึงใหม่"
-                                } else {
-                                    "ดึงข้อมูลการใช้ยา"
-                                }
-                            }}
                         </button>
                         {let confirm_state = state.clone(); move || {
                             confirm_state.rows.get()?;

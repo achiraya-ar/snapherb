@@ -1,10 +1,15 @@
+use std::time::Duration;
+
 use leptos::prelude::*;
 use snap_herb_models::DoctorRef;
 
 use crate::api;
-use crate::components::icons::{IconPlus, IconSearch, IconTrash, IconUser};
+use crate::components::icons::{IconPlus, IconSearch, IconStethoscope, IconTrash, IconUser};
 use crate::components::settings_modal::{StatusLine, StatusMessage};
 use crate::state::AppState;
+
+const SEARCH_DEBOUNCE: Duration = Duration::from_millis(250);
+const MIN_SEARCH_CHARS: usize = 3;
 
 #[component]
 pub fn DoctorsPanel(state: AppState) -> impl IntoView {
@@ -18,8 +23,7 @@ pub fn DoctorsPanel(state: AppState) -> impl IntoView {
     let term = RwSignal::new(String::new());
     let results = RwSignal::new(Vec::<DoctorRef>::new());
     let searching = RwSignal::new(false);
-    let manual_code = RwSignal::new(String::new());
-    let manual_name = RwSignal::new(String::new());
+    let search_seq = RwSignal::new(0_u64);
     let status = RwSignal::new(None::<StatusMessage>);
     let busy = RwSignal::new(false);
     let dirty = RwSignal::new(false);
@@ -48,42 +52,41 @@ pub fn DoctorsPanel(state: AppState) -> impl IntoView {
         status.set(None);
     };
 
-    let on_search = move |ev: web_sys::SubmitEvent| {
-        ev.prevent_default();
-        let value = term.get();
-        if value.trim().chars().count() < 2 {
-            status.set(Some(StatusMessage::error(
-                "พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหาแพทย์".to_string(),
-            )));
+    let on_term_input = move |ev| {
+        let raw = event_target_value(&ev);
+        term.set(raw.clone());
+        let seq = search_seq.get_untracked().wrapping_add(1);
+        search_seq.set(seq);
+        results.set(Vec::new());
+        status.set(None);
+        let needle = raw.trim().to_string();
+        if needle.chars().count() < MIN_SEARCH_CHARS {
+            searching.set(false);
             return;
         }
         searching.set(true);
-        status.set(None);
-        leptos::task::spawn_local(async move {
-            match api::search_doctors(&value).await {
-                Ok(hits) => results.set(hits),
-                Err(err) => {
-                    results.set(Vec::new());
-                    status.set(Some(StatusMessage::error(err.message)));
+        let _ = set_timeout_with_handle(
+            move || {
+                if search_seq.get_untracked() != seq {
+                    return;
                 }
-            }
-            searching.set(false);
-        });
-    };
-
-    let on_manual_add = move |ev: web_sys::SubmitEvent| {
-        ev.prevent_default();
-        let code = manual_code.get_untracked().trim().to_string();
-        let name = manual_name.get_untracked().trim().to_string();
-        if code.is_empty() || name.is_empty() {
-            status.set(Some(StatusMessage::error(
-                "กรุณากรอกรหัสและชื่อแพทย์".to_string(),
-            )));
-            return;
-        }
-        add_doctor(DoctorRef::new(code, name));
-        manual_code.set(String::new());
-        manual_name.set(String::new());
+                leptos::task::spawn_local(async move {
+                    let outcome = api::search_doctors(&needle).await;
+                    if search_seq.get_untracked() != seq {
+                        return;
+                    }
+                    searching.set(false);
+                    match outcome {
+                        Ok(hits) => results.set(hits),
+                        Err(err) => {
+                            results.set(Vec::new());
+                            status.set(Some(StatusMessage::error(err.message)));
+                        }
+                    }
+                });
+            },
+            SEARCH_DEBOUNCE,
+        );
     };
 
     let on_remove = move |code: String| {
@@ -129,6 +132,9 @@ pub fn DoctorsPanel(state: AppState) -> impl IntoView {
                     .unwrap_or_default(),
             );
             results.set(Vec::new());
+            term.set(String::new());
+            searching.set(false);
+            search_seq.update(|seq| *seq = seq.wrapping_add(1));
             dirty.set(false);
             status.set(None);
         }
@@ -136,12 +142,19 @@ pub fn DoctorsPanel(state: AppState) -> impl IntoView {
 
     view! {
         <div class="panel">
-            <h3 class="panel__subtitle">"แพทย์ที่ต้องการตรวจจับการสั่งจ่ายยา"</h3>
-            <p class="panel__note">
-                "ระบบจะนับเฉพาะรายการยาที่สั่งจ่ายโดยแพทย์ในรายการนี้ จากฟิลด์ doctor ของ opitemrece ใน HOSxP"
-            </p>
+            <div class="panel-head">
+                <span class="panel-head__icon">
+                    <IconStethoscope class="icon" />
+                </span>
+                <div>
+                    <h3 class="panel__subtitle">"แพทย์ที่ต้องการตรวจจับการสั่งจ่ายยา"</h3>
+                    <p class="panel__note">
+                        "ระบบจะนับเฉพาะรายการยาที่สั่งจ่ายโดยแพทย์ในรายการนี้"
+                    </p>
+                </div>
+            </div>
 
-            <form class="picker" on:submit=on_search>
+            <div class="picker">
                 <span class="panel__label">"ค้นหาแพทย์จาก HOSxP"</span>
                 <div class="picker__search">
                     <span class="picker__icon">
@@ -150,14 +163,27 @@ pub fn DoctorsPanel(state: AppState) -> impl IntoView {
                     <input
                         class="text-input"
                         type="search"
-                        placeholder="พิมพ์ชื่อหรือรหัสแพทย์ (อย่างน้อย 2 ตัวอักษร)"
+                        placeholder="พิมพ์ชื่อหรือรหัสแพทย์ อย่างน้อย 3 ตัวอักษร"
                         prop:value=move || term.get()
-                        on:input=move |ev| term.set(event_target_value(&ev))
+                        on:input=on_term_input
                     />
-                    <button class="button-secondary" type="submit" disabled=move || searching.get()>
-                        {move || if searching.get() { "กำลังค้นหา..." } else { "ค้นหา" }}
-                    </button>
                 </div>
+                <p class="panel__note">
+                    {move || {
+                        let count = term.get().trim().chars().count();
+                        if searching.get() {
+                            "กำลังค้นหาแพทย์...".to_string()
+                        } else if count == 0 {
+                            String::new()
+                        } else if count < MIN_SEARCH_CHARS {
+                            format!("พิมพ์อีก {} ตัวอักษร", MIN_SEARCH_CHARS - count)
+                        } else if results.get().is_empty() {
+                            "ไม่พบแพทย์ที่ตรงกับคำค้น".to_string()
+                        } else {
+                            format!("พบแพทย์ {} รายการ", results.get().len())
+                        }
+                    }}
+                </p>
                 <ul class="picker__results">
                     {move || {
                         results
@@ -196,31 +222,7 @@ pub fn DoctorsPanel(state: AppState) -> impl IntoView {
                             .collect_view()
                     }}
                 </ul>
-            </form>
-
-            <form class="manual-row" on:submit=on_manual_add>
-                <span class="panel__label">"หรือเพิ่มด้วยรหัสแพทย์เอง"</span>
-                <div class="manual-row__fields">
-                    <input
-                        class="text-input"
-                        type="text"
-                        placeholder="รหัสแพทย์"
-                        prop:value=move || manual_code.get()
-                        on:input=move |ev| manual_code.set(event_target_value(&ev))
-                    />
-                    <input
-                        class="text-input"
-                        type="text"
-                        placeholder="ชื่อแพทย์"
-                        prop:value=move || manual_name.get()
-                        on:input=move |ev| manual_name.set(event_target_value(&ev))
-                    />
-                    <button class="button-secondary" type="submit">
-                        <IconPlus class="icon" />
-                        "เพิ่ม"
-                    </button>
-                </div>
-            </form>
+            </div>
 
             <div class="selected-list">
                 <div class="selected-list__head">

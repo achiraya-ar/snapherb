@@ -1,13 +1,13 @@
 use leptos::prelude::*;
 
 use crate::api;
-use crate::components::icons::{IconHistory, IconLogOut, IconSettings};
+use crate::components::icons::{IconHistory, IconLogOut, IconUser};
 use crate::state::AppState;
 
 #[component]
 pub fn TopBar(state: AppState) -> impl IntoView {
     let health = state.health;
-    let open_settings = {
+    let open_settings_from_logo = {
         let state = state.clone();
         move |_| state.settings_open.set(true)
     };
@@ -29,36 +29,44 @@ pub fn TopBar(state: AppState) -> impl IntoView {
     view! {
         <header class="top-bar">
             <div class="top-bar__left">
-                <BrandMark />
+                <button
+                    class="brand-button"
+                    type="button"
+                    title=move || format!("เปิดการตั้งค่า · {}", health.get().label_th())
+                    aria-label="เปิดการตั้งค่า"
+                    on:click=open_settings_from_logo
+                >
+                    <BrandMark />
+                </button>
                 <div class="top-bar__titles">
                     <span class="top-bar__title">"SnapHerb"</span>
                     <span class="top-bar__subtitle">"ระบบเบิกยาสมุนไพร"</span>
+                    <span
+                        class=move || {
+                            format!(
+                                "status-dot top-bar__health status-dot--{}",
+                                health.get().dot_class(),
+                            )
+                        }
+                        role="status"
+                        aria-label=move || health.get().label_th()
+                    >
+                        <span class="status-dot__dot" aria-hidden="true"></span>
+                    </span>
                 </div>
             </div>
             <div class="top-bar__right">
-                <span
-                    class=move || format!("status-dot status-dot--{}", health.get().dot_class())
-                    role="status"
-                >
-                    <span class="status-dot__dot" aria-hidden="true"></span>
-                    <span class="status-dot__label">{move || health.get().label_th()}</span>
-                </span>
                 {move || {
                     state
                         .session
                         .get()
                         .map(|user| {
-                            let initial = user
-                                .display_name
-                                .chars()
-                                .next()
-                                .or_else(|| user.login_name.chars().next())
-                                .map(|c| c.to_string())
-                                .unwrap_or_default();
                             let title = format!("{} · {}", user.display_name, user.login_name);
                             view! {
                                 <span class="user-chip" title=title>
-                                    <span class="user-chip__avatar">{initial}</span>
+                                    <span class="user-chip__avatar">
+                                        <IconUser class="icon" />
+                                    </span>
                                     <span class="user-chip__text">
                                         <span class="user-chip__name">{user.display_name}</span>
                                         <span class="user-chip__role">"เจ้าหน้าที่"</span>
@@ -84,15 +92,6 @@ pub fn TopBar(state: AppState) -> impl IntoView {
                 >
                     <IconLogOut class="icon" />
                     "ออกจากระบบ"
-                </button>
-                <button
-                    class="button-ghost"
-                    title="ตั้งค่า"
-                    disabled=move || state.loading.get()
-                    on:click=open_settings
-                >
-                    <IconSettings class="icon" />
-                    "ตั้งค่า"
                 </button>
             </div>
         </header>

@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use snap_herb_models::ApprovalSettings;
 
 use crate::api;
+use crate::components::icons::IconUser;
 use crate::components::settings_modal::{StatusLine, StatusMessage};
 use crate::state::AppState;
 
@@ -82,10 +83,17 @@ pub fn ApprovalPanel(state: AppState) -> impl IntoView {
 
     view! {
         <div class="panel">
-            <h3 class="panel__subtitle">"ผู้ลงนามในใบเบิก"</h3>
-            <p class="panel__note">
-                "ชื่อผู้เบิกใช้จากบัญชีที่เข้าสู่ระบบ ส่วนชื่อและตำแหน่งด้านล่างใช้เติมในใบเบิกพัสดุ (ทางการ) และแบบฟอร์มระบบ"
-            </p>
+            <div class="panel-head">
+                <span class="panel-head__icon">
+                    <IconUser class="icon" />
+                </span>
+                <div>
+                    <h3 class="panel__subtitle">"ผู้ลงนามในใบเบิก"</h3>
+                    <p class="panel__note">
+                        "ชื่อผู้เบิกใช้จากบัญชีที่เข้าสู่ระบบ ส่วนชื่อและตำแหน่งด้านล่างใช้เติมในใบเบิกพัสดุ (ทางการ) และแบบฟอร์มระบบ"
+                    </p>
+                </div>
+            </div>
 
             <label class="field">
                 <span class="field__label">"งาน / หน่วยงานที่เบิก"</span>

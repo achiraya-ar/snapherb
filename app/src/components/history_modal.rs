@@ -35,7 +35,7 @@ pub fn HistoryModal(state: AppState) -> impl IntoView {
                                     <div>
                                         <h2 class="settings-modal__title">"ประวัติการเบิก"</h2>
                                         <p class="panel__note">
-                                            "ใบเบิกที่สร้างแล้วจะถูกล็อกถาวร ไม่สามารถแก้ไขหรือเบิกซ้ำได้ แต่ยังพิมพ์ซ้ำได้จากที่นี่"
+                                            "ใบเบิกที่สร้างแล้วจะไม่สามารถแก้ไขหรือเบิกซ้ำได้ แต่ยังพิมพ์ซ้ำได้จากที่นี่"
                                         </p>
                                     </div>
                                 </div>
@@ -79,9 +79,6 @@ pub fn HistoryModal(state: AppState) -> impl IntoView {
                                                         <div class="history-row__identity">
                                                             <span class="history-row__doc">
                                                                 {record.document_no.clone()}
-                                                            </span>
-                                                            <span class="status-badge status-badge--locked">
-                                                                "ล็อก"
                                                             </span>
                                                         </div>
                                                         <p class="history-row__period">
@@ -141,7 +138,6 @@ pub fn ReprintBar(state: AppState, record: RequisitionRecord) -> impl IntoView {
                     <div class="reprint-bar__title">
                         "กำลังดูใบเบิกที่บันทึกแล้ว "
                         <span class="history-row__doc">{record.document_no.clone()}</span>
-                        <span class="status-badge status-badge--locked">"ล็อก"</span>
                     </div>
                     <p class="reprint-bar__meta">
                         {format!(

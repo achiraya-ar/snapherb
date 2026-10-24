@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use snap_herb_models::ConnectionSummary;
 
 use crate::api::{self, ConnectionInput};
+use crate::components::icons::IconDatabase;
 use crate::components::settings_modal::{StatusLine, StatusMessage};
 use crate::state::{AppState, ConnectionHealth};
 
@@ -118,13 +119,20 @@ pub fn ConnectionPanel(state: AppState) -> impl IntoView {
 
     view! {
         <div class="panel">
-            <h3 class="panel__subtitle">"ฐานข้อมูล HOSxP"</h3>
-            <p class="panel__note">
-                "SnapHerb อ่านข้อมูลจาก HOSxP แบบอ่านอย่างเดียวเท่านั้น แนะนำให้ใช้บัญชี MySQL ที่ได้รับสิทธิ์ SELECT"
-            </p>
+            <div class="panel-head">
+                <span class="panel-head__icon">
+                    <IconDatabase class="icon" />
+                </span>
+                <div>
+                    <h3 class="panel__subtitle">"ฐานข้อมูล HOSxP"</h3>
+                    <p class="panel__note">
+                        "SnapHerb อ่านข้อมูลจาก HOSxP แบบอ่านอย่างเดียวเท่านั้น แนะนำให้ใช้บัญชี MySQL ที่ได้รับสิทธิ์ SELECT"
+                    </p>
+                </div>
+            </div>
             <div class="form-grid">
                 <label class="field">
-                    <span class="field__label">"ที่อยู่เซิร์ฟเวอร์ HOSxP" <span class="required">"จำเป็น"</span></span>
+                    <span class="field__label">"ที่อยู่เซิร์ฟเวอร์ HOSxP" <span class="required" aria-label="จำเป็น">"*"</span></span>
                     <input
                         class="text-input"
                         type="text"
@@ -144,7 +152,7 @@ pub fn ConnectionPanel(state: AppState) -> impl IntoView {
                     />
                 </label>
                 <label class="field">
-                    <span class="field__label">"ชื่อฐานข้อมูล" <span class="required">"จำเป็น"</span></span>
+                    <span class="field__label">"ชื่อฐานข้อมูล" <span class="required" aria-label="จำเป็น">"*"</span></span>
                     <input
                         class="text-input"
                         type="text"
@@ -154,7 +162,7 @@ pub fn ConnectionPanel(state: AppState) -> impl IntoView {
                     />
                 </label>
                 <label class="field">
-                    <span class="field__label">"ผู้ใช้ (อ่านอย่างเดียว)" <span class="required">"จำเป็น"</span></span>
+                    <span class="field__label">"ผู้ใช้ (อ่านอย่างเดียว)" <span class="required" aria-label="จำเป็น">"*"</span></span>
                     <input
                         class="text-input"
                         type="text"

@@ -130,11 +130,11 @@ fn OfficialPage(data: SheetData, page: SheetPage) -> impl IntoView {
 
             <p class="official-request">
                 "ข้าพเจ้าขอเบิกพัสดุ (ยาและเวชภัณฑ์ทางการแพทย์) ตามรายการข้างล่างนี้เพื่อใช้ในงาน "
-                <span class="official-value">{work_unit.clone()}</span>
+                <span class="official-value official-value--request-work">{work_unit.clone()}</span>
                 " และต้องการใช้สิ่งของตามใบเบิกนี้ ภายในวันที่ "
-                <span class="official-value"></span>
+                <span class="official-value official-value--needed-date"></span>
                 " และมอบให้ "
-                <span class="official-value">{receiver_name.clone()}</span>
+                <span class="official-value official-value--receiver">{receiver_name.clone()}</span>
                 " เป็นผู้รับสิ่งของตามใบเบิกนี้"
             </p>
 
