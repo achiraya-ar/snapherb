@@ -78,51 +78,15 @@
     <text x="230" y="243" font-family="'IBM Plex Sans Thai','Leelawadee UI',Tahoma,sans-serif" font-size="21" font-weight="700" fill="#064E3B">ใบเบิกยาสมุนไพร</text>
     <text x="230" y="261" font-family="'IBM Plex Sans Thai','Leelawadee UI',Tahoma,sans-serif" font-size="9" fill="#6B8F7C">SnapHerb ระบบเบิกยาสมุนไพร</text>
     <path d="M200 278H470" stroke="#BBF7D0" stroke-width="1.5" stroke-linecap="round" />
-    <text x="200" y="298" font-family="'IBM Plex Sans Thai','Leelawadee UI',Tahoma,sans-serif" font-size="9" font-weight="600" fill="#5B7267">รายการ</text>
-    <text x="426" y="298" font-family="'IBM Plex Sans Thai','Leelawadee UI',Tahoma,sans-serif" font-size="9" font-weight="600" fill="#5B7267">จำนวน</text>
-
     <g>
-      <circle cx="211" cy="316" r="8" fill="#DCFCE7" />
-      <circle cx="211" cy="316" r="4" fill="#15803D" />
-      <path d="M232 316H378" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round" />
-      <rect x="420" y="308" width="20" height="16" rx="4" fill="#FFFFFF" stroke="#86EFAC" />
-      <path d="M424 316L428 320L436 311" stroke="#15803D" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <text x="449" y="321" font-family="'IBM Plex Mono',Menlo,monospace" font-size="10" fill="#064E3B">1</text>
-    </g>
-    <g>
-      <circle cx="211" cy="338" r="8" fill="#E0F2FE" />
-      <rect x="207" y="333" width="8" height="10" rx="4" fill="#38BDF8" />
-      <rect x="207" y="338" width="8" height="5" rx="2.5" fill="#FFFFFF" />
-      <path d="M232 338H378" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round" />
-      <rect x="420" y="330" width="20" height="16" rx="4" fill="#FFFFFF" stroke="#86EFAC" />
-      <path d="M424 338L428 342L436 333" stroke="#15803D" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <text x="449" y="343" font-family="'IBM Plex Mono',Menlo,monospace" font-size="10" fill="#064E3B">2</text>
-    </g>
-    <g>
-      <circle cx="211" cy="360" r="8" fill="#DCFCE7" />
-      <circle cx="211" cy="360" r="4" fill="#15803D" />
-      <path d="M232 360H378" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round" />
-      <rect x="420" y="352" width="20" height="16" rx="4" fill="#FFFFFF" stroke="#86EFAC" />
-      <path d="M424 360L428 364L436 355" stroke="#15803D" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <text x="449" y="365" font-family="'IBM Plex Mono',Menlo,monospace" font-size="10" fill="#064E3B">1</text>
-    </g>
-    <g>
-      <circle cx="211" cy="382" r="8" fill="#E0F2FE" />
-      <rect x="207" y="377" width="8" height="10" rx="4" fill="#F472B6" />
-      <rect x="207" y="382" width="8" height="5" rx="2.5" fill="#FFFFFF" />
-      <path d="M232 382H378" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round" />
-      <rect x="420" y="374" width="20" height="16" rx="4" fill="#FFFFFF" stroke="#86EFAC" />
-      <path d="M424 382L428 386L436 377" stroke="#15803D" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <text x="449" y="387" font-family="'IBM Plex Mono',Menlo,monospace" font-size="10" fill="#064E3B">3</text>
-    </g>
-
-    <text x="200" y="414" font-family="'IBM Plex Sans Thai','Leelawadee UI',Tahoma,sans-serif" font-size="9" fill="#5B7267">รวม</text>
-    <text x="232" y="414" font-family="'IBM Plex Mono',Menlo,monospace" font-size="10" font-weight="600" fill="#15803D">12 กล่อง</text>
-
-    <g opacity="0.9">
-      <circle cx="431" cy="432" r="21" fill="none" stroke="#15803D" stroke-width="1.5" stroke-dasharray="3 2" />
-      <path d="M424 433L429 438L439 426" stroke="#15803D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <text x="424" y="450" font-family="'IBM Plex Mono',Menlo,monospace" font-size="6.5" fill="#15803D">SH</text>
+      <path d="M200 316H432" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round" />
+      <path d="M446 316L450 320L459 310" stroke="#15803D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M200 344H432" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round" />
+      <path d="M446 344L450 348L459 338" stroke="#15803D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M200 372H432" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round" />
+      <path d="M446 372L450 376L459 366" stroke="#15803D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M200 400H432" stroke="#E2E8F0" stroke-width="3" stroke-linecap="round" />
+      <path d="M446 400L450 404L459 394" stroke="#15803D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
     </g>
 
     <path d="M200 448H366" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="3 2" />
