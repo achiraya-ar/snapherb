@@ -108,7 +108,22 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
                 <div class="login__card">
                     <header class="login__card-head">
                         <h2 class="login__card-title">"เข้าสู่ระบบ"</h2>
-                        <p class="login__card-sub">"ใช้บัญชีเจ้าหน้าที่ HOSxP"</p>
+                        <p class="login__card-sub">
+                            "ใช้บัญชีเจ้าหน้าที่ HOSxP"
+                            <span
+                                class=move || {
+                                    format!(
+                                        "status-dot login__health status-dot--{}",
+                                        state.health.get().dot_class(),
+                                    )
+                                }
+                                title=move || state.health.get().label_th()
+                                role="status"
+                                aria-label=move || state.health.get().label_th()
+                            >
+                                <span class="status-dot__dot" aria-hidden="true"></span>
+                            </span>
+                        </p>
                     </header>
 
                     {move || {
@@ -135,17 +150,7 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
 
                     {move || {
                         match state.health.get() {
-                            ConnectionHealth::Connected => {
-                                Some(
-                                    view! {
-                                        <p class="login__connection login__connection--ok">
-                                            <span class="status-dot__dot"></span>
-                                            "เชื่อมต่อ HOSxP แล้ว"
-                                        </p>
-                                    }
-                                        .into_any(),
-                                )
-                            }
+                            ConnectionHealth::Connected => None,
                             ConnectionHealth::Disconnected => {
                                 Some(
                                     view! {
