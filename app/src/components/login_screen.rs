@@ -109,7 +109,6 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
                     <header class="login__card-head">
                         <h2 class="login__card-title">"เข้าสู่ระบบ"</h2>
                         <p class="login__card-sub">
-                            "ใช้บัญชีเจ้าหน้าที่ HOSxP"
                             <span
                                 class=move || {
                                     format!(
@@ -123,6 +122,7 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
                             >
                                 <span class="status-dot__dot" aria-hidden="true"></span>
                             </span>
+                            "ใช้บัญชีเจ้าหน้าที่ HOSxP"
                         </p>
                     </header>
 
