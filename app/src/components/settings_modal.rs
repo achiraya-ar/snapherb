@@ -223,20 +223,24 @@ fn SettingsFooter(state: AppState) -> impl IntoView {
             let Some(settings) = state.settings.get() else {
                 return;
             };
-            match crate::settings_io::export_json(&settings) {
-                Ok(json) => {
-                    match crate::settings_io::download_json(
-                        &json,
-                        &crate::settings_io::export_file_name(),
-                    ) {
-                        Ok(()) => status.set(Some(StatusMessage::ok(
-                            "ส่งออกไฟล์ตั้งค่าแล้ว (ไม่รวมการเชื่อมต่อและรหัสผ่าน)",
-                        ))),
-                        Err(message) => status.set(Some(StatusMessage::error(message))),
-                    }
+            let json = match crate::settings_io::export_json(&settings) {
+                Ok(json) => json,
+                Err(message) => {
+                    status.set(Some(StatusMessage::error(message)));
+                    return;
                 }
-                Err(message) => status.set(Some(StatusMessage::error(message))),
-            }
+            };
+            let file_name = crate::settings_io::export_file_name();
+            status.set(None);
+            leptos::task::spawn_local(async move {
+                match crate::api::export_settings_to_file(&json, &file_name).await {
+                    Ok(Some(path)) => status.set(Some(StatusMessage::ok(format!(
+                        "บันทึกไฟล์ตั้งค่าแล้ว: {path} (ไม่รวมการเชื่อมต่อและรหัสผ่าน)"
+                    )))),
+                    Ok(None) => status.set(Some(StatusMessage::ok("ยกเลิกการส่งออก"))),
+                    Err(err) => status.set(Some(StatusMessage::error(err.message))),
+                }
+            });
         }
     };
 

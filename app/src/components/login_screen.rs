@@ -72,19 +72,10 @@ pub fn LoginScreen(state: AppState) -> impl IntoView {
 
                 <div class="login__stage">
                     <h1 class="login__headline">"ใบเบิกยาสมุนไพร"</h1>
-                    <div class="login__art">
-                        <span class="login__leaf login__leaf--one" aria-hidden="true"></span>
-                        <span class="login__leaf login__leaf--two" aria-hidden="true"></span>
-                        <div class="login__art-mark">
-                            <BrandMark />
-                        </div>
-                        <span class="login__leaf login__leaf--three" aria-hidden="true"></span>
-                    </div>
-                    <div class="login__claims">
-                        <span class="login__claim">"คัดตามแพทย์ผู้สั่งจ่าย"</span>
-                        <span class="login__claim">"คำนวณจำนวนกล่องอัตโนมัติ"</span>
-                        <span class="login__claim">"ล็อกการเบิกซ้ำ"</span>
-                    </div>
+                    <div
+                        class="login__art"
+                        inner_html=include_str!("../../assets/login-illustration.svg")
+                    ></div>
                 </div>
 
                 <p class="login__brand-foot">

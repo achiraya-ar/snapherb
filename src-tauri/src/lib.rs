@@ -14,6 +14,7 @@ pub fn run() {
                 let _ = window.set_focus();
             }
         }))
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let config_dir = app.path().app_config_dir()?;
             let settings_path = config_dir.join(settings::SETTINGS_FILE_NAME);
@@ -69,6 +70,7 @@ pub fn run() {
             commands::save_catalog,
             commands::save_report,
             commands::save_approvals,
+            commands::export_settings_to_file,
             commands::search_drugs,
             commands::search_doctors,
             commands::fetch_usage,

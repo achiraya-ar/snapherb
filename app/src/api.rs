@@ -86,6 +86,13 @@ pub struct LoginInput {
     pub password: String,
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportSettingsInput {
+    pub contents: String,
+    pub file_name: String,
+}
+
 fn request_build_error() -> ApiError {
     ApiError {
         kind: ApiErrorKind::Query,
@@ -211,6 +218,21 @@ pub async fn save_report(report: &ReportMeta) -> Result<(), ApiError> {
 
 pub async fn save_approvals(approvals: &ApprovalSettings) -> Result<(), ApiError> {
     call_one("save_approvals", "approvals", approvals).await
+}
+
+pub async fn export_settings_to_file(
+    contents: &str,
+    file_name: &str,
+) -> Result<Option<String>, ApiError> {
+    call_one(
+        "export_settings_to_file",
+        "input",
+        &ExportSettingsInput {
+            contents: contents.to_string(),
+            file_name: file_name.to_string(),
+        },
+    )
+    .await
 }
 
 pub async fn search_drugs(term: &str) -> Result<Vec<DrugItem>, ApiError> {

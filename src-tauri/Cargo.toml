@@ -23,6 +23,7 @@ snap-herb-hosxp-connector = { path = "../crates/hosxp-connector" }
 snap-herb-models = { path = "../crates/models" }
 tauri = { version = "2", features = [] }
 tauri-plugin-single-instance = "2"
+tauri-plugin-dialog = "2"
 thiserror.workspace = true
 tokio.workspace = true
 

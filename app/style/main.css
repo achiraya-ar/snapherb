@@ -542,11 +542,17 @@ button {
 
 .login__art {
     position: relative;
-    width: min(100%, 360px);
+    width: min(100%, 460px);
     margin-top: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.login__art svg {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 .login__art-mark {

@@ -13,6 +13,7 @@ use snap_herb_models::{
     UsageRow,
 };
 use tauri::State;
+use tauri_plugin_dialog::DialogExt;
 
 use crate::error::CommandError;
 use crate::requisitions::{self, build_record};
@@ -82,6 +83,13 @@ pub struct ConnectionTestResult {
 pub struct LoginInput {
     pub username: String,
     pub password: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportFileInput {
+    pub contents: String,
+    pub file_name: String,
 }
 
 #[tauri::command]
@@ -321,6 +329,42 @@ pub async fn save_approvals(
     require_session(&state).await?;
     let approvals = normalize_approvals(approvals);
     update_settings(&state, |settings| settings.approvals = approvals).await
+}
+
+#[tauri::command]
+pub async fn export_settings_to_file(
+    input: ExportFileInput,
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<Option<String>, CommandError> {
+    require_session(&state).await?;
+    let ExportFileInput {
+        contents,
+        file_name,
+    } = input;
+    if contents.trim().is_empty() {
+        return Err(CommandError::validation("ไม่มีข้อมูลสำหรับส่งออก"));
+    }
+    if file_name.trim().is_empty() {
+        return Err(CommandError::validation("ไม่พบชื่อไฟล์สำหรับส่งออก"));
+    }
+    let path = app
+        .dialog()
+        .file()
+        .set_title("ส่งออกการตั้งค่า SnapHerb")
+        .set_file_name(file_name)
+        .add_filter("SnapHerb settings", &["json"])
+        .blocking_save_file();
+    let Some(path) = path else {
+        return Ok(None);
+    };
+    let path = path
+        .into_path()
+        .map_err(|err| CommandError::storage(err.to_string()))?;
+    tokio::fs::write(&path, contents)
+        .await
+        .map_err(|err| CommandError::storage(err.to_string()))?;
+    Ok(Some(path.to_string_lossy().to_string()))
 }
 
 #[tauri::command]
