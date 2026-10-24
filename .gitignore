@@ -1,0 +1,10 @@
+/target
+app/target
+**/*.rs.bk
+app/dist
+src-tauri/gen
+.env
+*.key
+.DS_Store
+
+er-refill/

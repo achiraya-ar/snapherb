@@ -1,0 +1,30 @@
+[package]
+name = "snap-herb-tauri"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Tauri 2 shell and command adapters for SnapHerb"
+
+[lib]
+name = "snap_herb_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+chrono.workspace = true
+secrecy.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+snap-herb-core = { path = "../crates/core" }
+snap-herb-hosxp-connector = { path = "../crates/hosxp-connector" }
+snap-herb-models = { path = "../crates/models" }
+tauri = { version = "2", features = [] }
+tauri-plugin-single-instance = "2"
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

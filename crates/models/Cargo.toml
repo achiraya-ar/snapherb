@@ -1,0 +1,15 @@
+[package]
+name = "snap-herb-models"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Domain types and Thai/Buddhist-era formatting for SnapHerb"
+
+[dependencies]
+chrono.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
