@@ -1,7 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Snap Herb",
-  "version": "0.1.0",
+  "productName": "SnapHerb",
+  "mainBinaryName": "SnapHerb",
+  "version": "1.26.24",
   "identifier": "com.snapherb.desktop",
   "build": {
     "beforeDevCommand": { "script": "trunk serve --port 1420", "cwd": "../app" },
@@ -13,7 +14,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Snap Herb - ใบเบิกยาสมุนไพร",
+        "title": "SnapHerb - ใบเบิกยาสมุนไพร",
         "width": 1180,
         "height": 820,
         "minWidth": 960,

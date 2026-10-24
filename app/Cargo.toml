@@ -2,7 +2,7 @@
 
 [package]
 name = "snap-herb-app"
-version = "0.1.0"
+version = "1.26.24"
 edition = "2024"
 license = "MIT"
 
