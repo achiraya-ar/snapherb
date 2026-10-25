@@ -1468,7 +1468,7 @@ checksum = "d0d5d4b1981b8bbbb7aed204cae5726d683d5d6ac7e74ec54122ea28f315e7c8"
 
 [[package]]
 name = "snap-herb-app"
-version = "1.26.24"
+version = "1.26.1025"
 dependencies = [
  "chrono",
  "js-sys",
@@ -1486,7 +1486,7 @@ dependencies = [
 
 [[package]]
 name = "snap-herb-core"
-version = "1.26.24"
+version = "1.26.1025"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1497,7 +1497,7 @@ dependencies = [
 
 [[package]]
 name = "snap-herb-models"
-version = "1.26.24"
+version = "1.26.1025"
 dependencies = [
  "chrono",
  "serde",

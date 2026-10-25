@@ -130,7 +130,7 @@ impl HosxRepository for ConnectorRepository {
         let sql = usage_in_period_sql(icodes.len(), doctor_codes.len());
         Self::guard(&sql)?;
 
-        let mut query = sqlx::query(&sql);
+        let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
         for icode in icodes {
             query = query.bind(icode);
         }

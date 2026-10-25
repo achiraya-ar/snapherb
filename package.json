@@ -1,6 +1,6 @@
 {
   "name": "snapherb",
-  "version": "1.26.24",
+  "version": "1.26.1025",
   "private": true,
   "scripts": {
     "tauri": "cargo tauri",
