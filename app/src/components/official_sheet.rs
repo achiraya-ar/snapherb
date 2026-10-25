@@ -50,7 +50,7 @@ fn OfficialPage(data: SheetData, page: SheetPage) -> impl IntoView {
     let orderer_position = clean(&data.approvals.orderer_position);
     let payer_name = clean(&data.approvals.payer_name);
     let payer_position = clean(&data.approvals.payer_position);
-    let document_no = data.document_no.clone().unwrap_or_default();
+    let document_no = String::new();
     let page_label = format!("หน้า {} / {}", page.number, page.count);
     let start = page.number.saturating_sub(1) * OFFICIAL_ROWS_PER_PAGE;
     let mut slots: Vec<Option<PageRow>> = (0..OFFICIAL_ROWS_PER_PAGE).map(|_| None).collect();

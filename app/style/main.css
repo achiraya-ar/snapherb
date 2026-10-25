@@ -198,7 +198,15 @@ button {
 }
 
 .brand-mark {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+}
+
+.brand-mark > svg {
     display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .brand-mark-defs {
@@ -2182,7 +2190,8 @@ button:disabled {
         box-shadow: none;
     }
 
-    .sheet + .sheet {
+    .sheet + .sheet,
+    .official-sheet {
         margin-top: 0;
         break-before: page;
     }
@@ -2212,16 +2221,6 @@ button:disabled {
     .sheet__logo {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-    }
-
-    /* Drop the SVG emboss filter when printing so the mark stays crisp
-       vector art at the printer's own resolution. */
-    .sheet__logo .brand-mark {
-        shape-rendering: geometricPrecision;
-    }
-
-    .sheet__logo .brand-mark [filter] {
-        filter: none;
     }
 }
 
