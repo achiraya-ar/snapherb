@@ -87,8 +87,8 @@ cargo tauri build
 - **ทดสอบสร้าง Windows installer แบบ manual**: ไปที่ `Actions` → `Test Build` → `Run workflow` แล้วดาวน์โหลด artifact ชื่อ `snapherb-windows-installers` (มีทั้ง `.msi` และ `.exe` จาก NSIS)
 - **ออก release เต็มรูปแบบ**: สร้าง tag ให้ตรงกับเวอร์ชันใน `tauri.conf.json` แล้ว push
   ```bash
-  git tag v1.26.1025
-  git push origin v1.26.1025
+  git tag v1.26.1026
+  git push origin v1.26.1026
   ```
   workflow `Publish Release` จะสร้าง GitHub Release พร้อมไฟล์ติดตั้ง Windows, Linux และ macOS
 

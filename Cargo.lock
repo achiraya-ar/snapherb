@@ -3781,7 +3781,7 @@ dependencies = [
 
 [[package]]
 name = "snap-herb-core"
-version = "1.26.1025"
+version = "1.26.1026"
 dependencies = [
  "async-trait",
  "chrono",
@@ -3794,7 +3794,7 @@ dependencies = [
 
 [[package]]
 name = "snap-herb-hosxp-connector"
-version = "1.26.1025"
+version = "1.26.1026"
 dependencies = [
  "async-trait",
  "chrono",
@@ -3813,7 +3813,7 @@ dependencies = [
 
 [[package]]
 name = "snap-herb-models"
-version = "1.26.1025"
+version = "1.26.1026"
 dependencies = [
  "chrono",
  "serde",
@@ -3823,7 +3823,7 @@ dependencies = [
 
 [[package]]
 name = "snap-herb-tauri"
-version = "1.26.1025"
+version = "1.26.1026"
 dependencies = [
  "chrono",
  "secrecy",
